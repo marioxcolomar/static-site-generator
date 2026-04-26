@@ -24,7 +24,7 @@ class TextNode:
             return True
         return False
 
-    def text_node_to_html_node(text_node):
+    def text_node_to_html_node(self, text_node):
         match TextType(text_node):
             case TextType.TEXT:
                 return LeafNode(None, text_node.text)

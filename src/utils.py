@@ -5,30 +5,23 @@ from textnode import TextNode, TextType
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
-
     for node in old_nodes:
-        if node.text_type is not TextType.TEXT:
+        if node.text_type != TextType.TEXT:
             new_nodes.append(node)
             continue
         split_nodes = []
         positions = node.text.split(delimiter)
         if len(positions) % 2 == 0:
-            raise Exception(
-                "Error: invalid Markdown syntax, formatted section did not close."
-            )
-
+            raise Exception("invalid markdown syntax, formatted section did not close.")
         for i in range(len(positions)):
             if positions[i] == "":
                 continue
-
             if i % 2 == 0:
                 split_nodes.append(TextNode(positions[i], TextType.TEXT))
             else:
                 split_nodes.append(TextNode(positions[i], text_type))
-
         new_nodes.extend(split_nodes)
-
-        return new_nodes
+    return new_nodes
 
 
 def extract_markdown_images(text):
@@ -87,3 +80,13 @@ def split_nodes_links(old_nodes):
         if text != "":
             new_nodes.append(TextNode(text, TextType.TEXT))
     return new_nodes
+
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_links(nodes)
+    return nodes

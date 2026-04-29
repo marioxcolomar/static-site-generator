@@ -7,6 +7,7 @@ from utils import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_links,
+    text_to_textnodes,
 )
 
 
@@ -57,6 +58,20 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         ]
         self.assertEqual(new_nodes, expected)
 
+    def test_delim_bold_and_italic(self):
+        node = TextNode("**bold** and _italic_", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        new_nodes = split_nodes_delimiter(new_nodes, "_", TextType.ITALIC)
+        print("new nodes: ", new_nodes)
+        self.assertEqual(
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+            ],
+            new_nodes,
+        )
+
     def test_delim_code(self):
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
@@ -66,6 +81,20 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode(" word", TextType.TEXT),
         ]
         self.assertEqual(new_nodes, expected)
+
+    def test_delim_italic_and_code(self):
+        node = TextNode("This is _italic_ with `code block`", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
+        new_nodes = split_nodes_delimiter(new_nodes, "`", TextType.CODE)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("This is", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" with ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+            ],
+        )
 
 
 class TestExtractMarkdownImages(unittest.TestCase):
@@ -164,6 +193,30 @@ class TestSplitNodesLinks(unittest.TestCase):
                 TextNode("super link", TextType.LINK, "https://super-link.com"),
             ],
             new_nodes,
+        )
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_textnodes(self):
+        nodes = text_to_textnodes(
+            "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        )
+        self.assertListEqual(
+            nodes,
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode(
+                    "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+                ),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+            ],
         )
 
 

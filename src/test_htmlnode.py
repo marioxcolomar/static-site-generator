@@ -51,7 +51,10 @@ class TestHtmlNode(unittest.TestCase):
                 LeafNode(None, "Normal text"),
             ],
         )
-        print(f"this is parent: {parent.to_html()}")
+        self.assertEqual(
+            parent.to_html(),
+            "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>",
+        )
 
 
 if __name__ == "__main___":

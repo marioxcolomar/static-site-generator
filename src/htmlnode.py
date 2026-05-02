@@ -9,13 +9,12 @@ class HTMLNode:
         raise NotImplementedError("Error: not currently possible")
 
     def props_to_html(self):
-        res = ""
         if self.props is None:
-            return res
-        for key, value in self.props.items():
-            res += f' {key}="{value}"'
-
-        return res
+            return ""
+        props_html = ""
+        for prop in self.props:
+            props_html += f' {prop}="{self.props[prop]}"'
+        return props_html
 
     def __repr__(self):
         return f"HTMLNode({self.tag}, {self.value}, children: {self.children}, {self.props})"
@@ -32,6 +31,10 @@ class LeafNode(HTMLNode):
         )
 
     def to_html(self):
+        if self.value is None:
+            raise ValueError("invalid HTML: no value")
+        if self.tag is None:
+            return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
     def __repr__(self):
@@ -49,8 +52,8 @@ class ParentNode(HTMLNode):
             raise ValueError("children are missing")
 
         html = ""
-
         for child in self.children:
+            print("my child: ", child)
             html += child.to_html()
 
         return f"<{self.tag}{self.props_to_html()}>{html}</{self.tag}>"

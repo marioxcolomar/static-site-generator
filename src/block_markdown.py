@@ -126,7 +126,7 @@ def o_list_to_html_node(block):
     items = block.split("\n")
     html_items = []
     for item in items:
-        parts = items.split(". ", 1)
+        parts = item.split(". ", 1)
         text = parts[1]
         children = text_to_children(text)
         html_items.append(ParentNode("li", children))
@@ -153,3 +153,12 @@ def quote_to_html_node(block):
     content = " ".join(new_lines)
     children = text_to_children(content)
     return ParentNode("blockquote", children)
+
+
+def extract_title(markdown):
+    lines = markdown.split("\n")
+    first_line = lines[0]
+    if not first_line.startswith("# "):
+        raise ValueError("no title found in the markdown")
+    title = first_line.split("# ")
+    return title[1].strip()

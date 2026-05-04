@@ -3,6 +3,7 @@ import unittest
 from block_markdown import (
     BlockType,
     block_to_block_type,
+    extract_title,
     markdown_to_blocks,
     markdown_to_html_node,
 )
@@ -63,9 +64,7 @@ This is another paragraph with _italic_ text and `code` here
 
 """
         node = markdown_to_html_node(md)
-        print("this is my node in a test: ", node)
         html = node.to_html()
-        print("actual html: ", html)
         self.assertEqual(
             html,
             "<div><p>This is <b>bolded</b> paragraph text in a p tag</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
@@ -84,6 +83,16 @@ the **same** even with inline stuff
             html,
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
+
+    def test_extrat_title(self):
+        md = "# Hello "
+        title = extract_title(md)
+        self.assertEqual(title, "Hello")
+
+    def test_extract_title_multiple_lines(self):
+        md = "# Me title\nWith more lines\nTesting testing"
+        title = extract_title(md)
+        self.assertEqual(title, "Me title")
 
 
 if __name__ == "__main__":

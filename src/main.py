@@ -1,11 +1,15 @@
 import shutil
+from os import makedirs
 from pathlib import Path
+
+from block_markdown import extract_title, markdown_to_html_node
 
 
 def main():
     source_dir = Path("static")
     destination_dir = Path("public")
     copy_directory(source_dir, destination_dir)
+    generate_page("content/index.md", "template.html", "public/index.html")
 
 
 def copy_directory(source, destination):
@@ -29,6 +33,26 @@ def copy_directory(source, destination):
                 print(f"copied: {item} -> {target}")
 
     copy(source, destination)
+
+
+def generate_page(from_path, template_path, destination_path):
+    print(
+        f"Generating page from {from_path} to {destination_path} using {template_path}"
+    )
+    dir = destination_path.split("/")[0]
+    makedirs(dir, exist_ok=True)
+    with (
+        open(from_path, "r") as from_file,
+        open(template_path, "r") as template_file,
+        open(destination_path, "w") as new_page,
+    ):
+        markdown = from_file.read()
+        template = template_file.read()
+        content = markdown_to_html_node(markdown).to_html()
+        title = extract_title(markdown)
+        template = template.replace("{{ Title }}", title)
+        template = template.replace("{{ Content }}", content)
+        new_page.write(template)
 
 
 if __name__ == "__main__":

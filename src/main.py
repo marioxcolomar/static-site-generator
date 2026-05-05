@@ -8,9 +8,9 @@ from block_markdown import extract_title, markdown_to_html_node
 
 
 def main():
-    basepath = sys.argv[0]
-    if basepath == "":
-        basepath = "/"
+    basepath = "/"
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
     source_dir = Path("static")
     destination_dir = Path("docs")
     copy_directory(source_dir, destination_dir)

@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from os import listdir, makedirs, path
 from pathlib import Path
 
@@ -7,10 +8,13 @@ from block_markdown import extract_title, markdown_to_html_node
 
 
 def main():
+    basepath = sys.argv[0]
+    if basepath == "":
+        basepath = "/"
     source_dir = Path("static")
-    destination_dir = Path("public")
+    destination_dir = Path("docs")
     copy_directory(source_dir, destination_dir)
-    generate_pages_recursive(Path("content"), "template.html", Path("public"))
+    generate_pages_recursive(Path("content"), "template.html", Path("docs"), basepath)
 
 
 def copy_directory(source, destination):
@@ -36,7 +40,7 @@ def copy_directory(source, destination):
     copy(source, destination)
 
 
-def generate_page(from_path, template_path, destination_path):
+def generate_page(from_path, template_path, destination_path, basepath):
     print(
         f"Generating page from {from_path} to {destination_path} using {template_path}"
     )
@@ -54,19 +58,23 @@ def generate_page(from_path, template_path, destination_path):
         title = extract_title(markdown)
         template = template.replace("{{ Title }}", title)
         template = template.replace("{{ Content }}", content)
+        template = template.replace('href="/', f'href="{basepath}')
+        template = template.replace('src="/', f'src="{basepath}')
         new_page.write(template)
 
 
-def generate_pages_recursive(dir_path, template_path, dest_path):
+def generate_pages_recursive(dir_path, template_path, dest_path, basepath):
     for directory in listdir(dir_path):
         full_path = path.join(dir_path, directory)
         destination = path.join(dest_path, directory)
         if os.path.isfile(full_path):
             if directory.endswith(".md"):
                 destination = destination.replace(".md", ".html")
-                generate_page(full_path, template_path, destination)
+                generate_page(full_path, template_path, destination, basepath)
         else:
-            generate_pages_recursive(Path(full_path), template_path, Path(destination))
+            generate_pages_recursive(
+                Path(full_path), template_path, Path(destination), basepath
+            )
 
 
 if __name__ == "__main__":

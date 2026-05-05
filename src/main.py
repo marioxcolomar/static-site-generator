@@ -1,5 +1,6 @@
+import os
 import shutil
-from os import makedirs
+from os import listdir, makedirs, path
 from pathlib import Path
 
 from block_markdown import extract_title, markdown_to_html_node
@@ -9,7 +10,7 @@ def main():
     source_dir = Path("static")
     destination_dir = Path("public")
     copy_directory(source_dir, destination_dir)
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive(Path("content"), "template.html", Path("public"))
 
 
 def copy_directory(source, destination):
@@ -39,8 +40,9 @@ def generate_page(from_path, template_path, destination_path):
     print(
         f"Generating page from {from_path} to {destination_path} using {template_path}"
     )
-    dir = destination_path.split("/")[0]
-    makedirs(dir, exist_ok=True)
+    destination = path.dirname(destination_path)
+    if destination != "":
+        makedirs(destination, exist_ok=True)
     with (
         open(from_path, "r") as from_file,
         open(template_path, "r") as template_file,
@@ -53,6 +55,18 @@ def generate_page(from_path, template_path, destination_path):
         template = template.replace("{{ Title }}", title)
         template = template.replace("{{ Content }}", content)
         new_page.write(template)
+
+
+def generate_pages_recursive(dir_path, template_path, dest_path):
+    for directory in listdir(dir_path):
+        full_path = path.join(dir_path, directory)
+        destination = path.join(dest_path, directory)
+        if os.path.isfile(full_path):
+            if directory.endswith(".md"):
+                destination = destination.replace(".md", ".html")
+                generate_page(full_path, template_path, destination)
+        else:
+            generate_pages_recursive(Path(full_path), template_path, Path(destination))
 
 
 if __name__ == "__main__":
